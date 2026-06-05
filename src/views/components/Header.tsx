@@ -8,6 +8,10 @@ type HeaderProps = {
   replicateEnabled?: boolean;
   dailySpending?: number;
   dailyLimit?: number;
+  apiStatus?: {
+    status: string;
+    balanceRemaining: number;
+  };
 };
 
 export const Header = ({
@@ -16,9 +20,14 @@ export const Header = ({
   replicateEnabled,
   dailySpending,
   dailyLimit,
+  apiStatus,
 }: HeaderProps) => {
   const limit = dailyLimit ?? parseFloat(user.spendingLimitUsd || "8");
   const spent = dailySpending ?? 0;
+  const isOutOfCredits = apiStatus?.status === "down" && (apiStatus?.balanceRemaining ?? 0) < 0;
+  const isDown = apiStatus?.status === "down";
+  const statusText = isOutOfCredits  ? "Down (HCAI ran out of credits)" : isDown  ? "Down" : "Up";
+  const statusDotClass = isDown ? "bg-red-500" : "bg-green-500";
   return (
     <header class="py-6 sm:mb-8 relative z-50">
       <div class="max-w-7xl mx-auto px-4 flex justify-between items-center gap-4">
@@ -80,6 +89,19 @@ export const Header = ({
                 ${spent.toFixed(2)}/${limit.toFixed(2)}
               </span>
             </div>
+          )}
+          {apiStatus && (
+            <a
+              href="https://ai.hackclub.com/up"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 px-3 py-1.5 bg-brand-surface border border-brand-border rounded-full hover:border-brand-primary transition-colors"
+            >
+              <div class={`w-2 h-2 rounded-full ${statusDotClass}`}></div>
+              <span class="text-xs font-medium text-brand-text">
+                Status: {statusText}
+              </span>
+            </a>
           )}
           <div class="flex items-center gap-3 pl-6 border-l-2 border-brand-border">
             <span class="text-sm font-medium text-brand-heading">
